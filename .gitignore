@@ -1,0 +1,31 @@
+# Frontend (Vite + React)
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.vite/
+
+# Backend (Spring Boot + Maven)
+backend/target/
+backend/.classpath
+backend/.project
+backend/.settings/
+backend/.idea/
+backend/*.iml
+
+# IntelliJ / VSCode
+*.iml
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# Log files
+*.log
+
+# Env files
+.env
+.env.*.local
