@@ -8,7 +8,7 @@ export interface Restaurant{
     contactInformation?: string; // Can be optional
     averageRating?: number;
     totalReviews?: number;
-    reviews? Review[];
+    reviews?: Review[];
     address: Address;
     geoLocation?: Geolocation;
     operatingHours: OperatingHours;
