@@ -21,8 +21,6 @@ import axios, {
 } from "axios";
 import { useAuth } from "react-oidc-context";
 import { ApiService } from "./apiService";
-import { error } from "console";
-import { headers } from "next/headers";
 
 export class AxiosApiService implements ApiService {
   // Axios instance to make HTTP requests
@@ -233,7 +231,7 @@ export class AxiosApiService implements ApiService {
                 formData.append("caption", caption);
             }
 
-            const response: AxiosResponse<Photo> = await.this.api.post(
+            const response: AxiosResponse<Photo> = await this.api.post(
                 "/photos",
                 formData,
                 {
