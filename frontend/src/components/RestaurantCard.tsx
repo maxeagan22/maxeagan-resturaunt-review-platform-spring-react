@@ -5,34 +5,45 @@ import { Card } from "./ui/card";
 import { RestaurantSummary } from "@/domain/domain";
 
 interface RestaurantCardProps {
+  /** The restaurant summary object containing all necessary display info */
   restaurant: RestaurantSummary;
 }
 
+/**
+ * Gets the restaurant's first photo URL, or a fallback placeholder.
+ * @param restaurant The restaurant data
+ * @returns A URL string
+ */
 const getImage = (restaurant: RestaurantSummary) => {
   return restaurant.photos?.[0]?.url
     ? `/api/photos/${restaurant.photos[0].url}`
     : "/placeholder.svg";
 };
 
+/**
+ * Renders a row of 5 stars to represent a rating.
+ * Highlights stars based on provided rating value.
+ */
 const RatingStars = ({ rating }: { rating: number }) => {
   return (
     <div className="flex items-center gap-1 mb-2">
-      {Array.from({ length: 5 }).map((_, i) => {
-        return (
-          <Star
-            key={i}
-            className={`w-4 h-4 ${
-              i < Math.floor(rating)
-                ? "text-yellow-400 fill-yellow-400"
-                : "text-gray-300"
-            }`}
-          />
-        );
-      })}
+      {Array.from({ length: 5 }).map((_, i) => (
+        <Star
+          key={i}
+          className={`w-4 h-4 ${
+            i < Math.floor(rating)
+              ? "text-yellow-400 fill-yellow-400"
+              : "text-gray-300"
+          }`}
+        />
+      ))}
     </div>
   );
 };
 
+/**
+ * A reusable icon button component for small inline actions.
+ */
 const IconButton = ({
   icon,
   onClick,
@@ -48,6 +59,10 @@ const IconButton = ({
   </button>
 );
 
+/**
+ * A card component that displays basic info about a restaurant.
+ * Includes image, name, location, average rating, cuisine type, and icon actions.
+ */
 export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
   return (
     <Link href={`/restaurants/${restaurant.id}`}>
