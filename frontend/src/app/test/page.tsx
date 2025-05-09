@@ -7,8 +7,12 @@ const mockRestaurant: RestaurantSummary = {
   cuisineType: "Italian",
   averageRating: 4.2,
   address: {
-    city: "Rome",
-    country: "Italy",
+    streeNumber: "111",
+    streetName: "Fakeaddress Drive",
+    city: "Maryvile",
+    state: "Missouri",
+    postalCode: "64468",
+    country: "United States",
   },
   photos: [],
 };

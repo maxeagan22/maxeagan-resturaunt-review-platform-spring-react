@@ -10,7 +10,7 @@ interface RestaurantCardProps {
 }
 
 /**
- * Gets the restaurant's first photo URL, or a fallback placeholder.
+ * Gets the restaurant's first photo URL, null .
  * @param restaurant The restaurant data
  * @returns A URL string
  */
