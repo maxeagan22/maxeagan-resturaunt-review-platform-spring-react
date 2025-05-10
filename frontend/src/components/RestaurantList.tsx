@@ -1,13 +1,32 @@
 "use client";
+
 import RestaurantCard from "./RestaurantCard";
 import { RestaurantSummary } from "@/domain/domain";
 import { Donut } from "lucide-react";
 
+/**
+ * Props for the RestaurantList component.
+ */
 interface RestaurantListProps {
+  /**
+   * Indicates whether the restaurant data is currently loading.
+   */
   loading: boolean;
+
+  /**
+   * Array of restaurants to be displayed.
+   */
   restaurants: RestaurantSummary[];
 }
 
+/**
+ * RestaurantList component
+ *
+ * Displays a list of restaurants using the RestaurantCard component.
+ * Shows a loading indicator when data is loading, and an empty state when no restaurants are available.
+ *
+ * @param props - Component props including loading state and restaurant data
+ */
 export default function RestaurantList(props: RestaurantListProps) {
   const { loading, restaurants } = props;
 
@@ -15,15 +34,14 @@ export default function RestaurantList(props: RestaurantListProps) {
     return <div>Loading...</div>;
   }
 
-  if (restaurants.length == 0) {
+  if (restaurants.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-[200px]">
         <div className="text-center">
           <div className="flex justify-center">
             <Donut size={110} className="opacity-[0.1]" />
           </div>
-
-          <h4 className="mt-4 opacity-[0.3]">No Restaurants Avaliable</h4>
+          <h4 className="mt-4 opacity-[0.3]">No Restaurants Available</h4>
         </div>
       </div>
     );
