@@ -2,8 +2,8 @@
 
 import { useState, useRef } from "react";
 import { Search, Star } from "lucide-react";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
+import { Input } from "./ui/Input";
+import { Button } from "./ui/Button";
 import { RestaurantSearchParams } from "@/domain/domain";
 
 /**
@@ -27,8 +27,8 @@ interface RestaurantSearchProps {
  * - A submit button to execute the search manually.
  *
  * State:
- * - `query`: the search string typed by the user.
- * - `minRating`: the minimum star rating selected.
+ * query: the search string typed by the user.
+ * minRating`: the minimum star rating selected.
  *
  * This component is controlled and stateless with regard to results—it only triggers searches via props.
  */
@@ -38,7 +38,7 @@ export default function RestaurantSearch(props: RestaurantSearchProps) {
   const [query, setQuery] = useState("");
   const [minRating, setMinRating] = useState<number | undefined>(undefined);
 
-  // Track initial render to avoid unintended side effects
+  // Track initial render to avoid unintended side effects.
   const inInitialRender = useRef(true);
 
   const handleSearch = async () => {
