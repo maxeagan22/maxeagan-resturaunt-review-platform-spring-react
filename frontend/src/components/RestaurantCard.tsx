@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Star, Heart, Share2 } from "lucide-react";
-import { Card } from "./ui/Card";
+import { Card } from "./ui/card";
 import { RestaurantSummary } from "@/domain/domain";
 
 interface RestaurantCardProps {

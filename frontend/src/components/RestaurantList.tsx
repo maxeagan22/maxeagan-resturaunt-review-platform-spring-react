@@ -19,7 +19,7 @@ interface RestaurantListProps {
   restaurants: RestaurantSummary[];
 }
 
-/**
+/*
  * RestaurantList component
  *
  * Displays a list of restaurants using the RestaurantCard component.

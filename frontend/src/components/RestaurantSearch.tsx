@@ -2,8 +2,8 @@
 
 import { useState, useRef } from "react";
 import { Search, Star } from "lucide-react";
-import { Input } from "./ui/Input";
-import { Button } from "./ui/Button";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
 import { RestaurantSearchParams } from "@/domain/domain";
 
 /**
