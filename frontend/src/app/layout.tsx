@@ -1,10 +1,10 @@
 import AuthButton from "@/components/AuthButton";
 import { AppAuthProvider } from "@/providers/AppAuthProvider";
 import { AppContextProvider } from "@/providers/AppContextProvider";
-import "@/styles/global.css";
+import "@/styles/globals.css";
 import { Inter } from "next/font/google";
 import Link from "next/link";
-import type React from "react"; // Import react.
+import type React from "react"; // Import React
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,7 +22,7 @@ export default function RootLayout({
     <AppAuthProvider>
       <AppContextProvider>
         <html lang="en">
-          <body className="inter.className">
+          <body className={inter.className}>
             <header className="border-b">
               <div className="max-w-[1200px] mx-auto px-4 py-4 flex justify-between items-center">
                 <Link href="/" className="text-2xl font-bold">

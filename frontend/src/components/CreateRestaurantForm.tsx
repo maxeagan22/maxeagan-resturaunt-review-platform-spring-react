@@ -1,7 +1,7 @@
 import { useFormContext } from "react-hook-form";
-import { Input } from "./ui/input";
-import { Label } from "@radix-ui/react-label";
-import { Button } from "./ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Photo } from "@/domain/domain";

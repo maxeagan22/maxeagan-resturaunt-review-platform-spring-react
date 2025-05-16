@@ -42,9 +42,9 @@ export const oldConfig = {
  *
  * Wraps the application with OIDC authentication context.
  * Must be used at the root level (e.g., in _app.tsx or layout.tsx) to provide
- * authentication state to the rest of the application via `useAuth()` hook.
+ * authentication state to the rest of the application via useAuth()S hook.
  *
- * @param children - React children to render inside the provider
+ * @param children - React children to render inside the provider.
  */
 export function AppAuthProvider({ children }: PropsWithChildren) {
   return <AuthProvider {...oldConfig}>{children}</AuthProvider>;

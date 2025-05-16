@@ -2,8 +2,8 @@
 
 import { useState, useRef } from "react";
 import { Search, Star } from "lucide-react";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { RestaurantSearchParams } from "@/domain/domain";
 
 /**
@@ -38,8 +38,8 @@ export default function RestaurantSearch(props: RestaurantSearchProps) {
   const [query, setQuery] = useState("");
   const [minRating, setMinRating] = useState<number | undefined>(undefined);
 
-  // Track initial render to avoid unintended side effects.
-  const inInitialRender = useRef(true);
+  // Use a ref to track if this is the initial render
+  const isInitialMount = useRef(true);
 
   const handleSearch = async () => {
     await searchRestaurants({
@@ -49,26 +49,32 @@ export default function RestaurantSearch(props: RestaurantSearchProps) {
   };
 
   const handleSearchFormSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); // ← FIX: you missed the parentheses here
+    e.preventDefault();
     await handleSearch();
   };
 
   const handleMinRatingFilter = async (value: number) => {
-    // Toggle rating filter
+    // First update the state
     if (minRating !== value) {
+      // Selecting a new rating
       setMinRating(value);
+
+      // Wait until next tick to ensure state is updated
       setTimeout(() => {
         searchRestaurants({
           q: query,
-          minRating: value,
+          minRating: value, // Use the new value directly
         });
       }, 0);
     } else {
+      // Deselecting the current rating
       setMinRating(undefined);
+
+      // Wait until next tick to ensure state is updated
       setTimeout(() => {
         searchRestaurants({
           q: query,
-          minRating: undefined,
+          minRating: undefined, // Use undefined directly
         });
       }, 0);
     }
@@ -79,7 +85,7 @@ export default function RestaurantSearch(props: RestaurantSearchProps) {
       <form onSubmit={handleSearchFormSubmit} className="flex gap-2 mb-4">
         <Input
           type="text"
-          placeholder="Searching for restaurants..."
+          placeholder="Search for restaurants..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="flex-grow"
@@ -88,7 +94,6 @@ export default function RestaurantSearch(props: RestaurantSearchProps) {
           <Search className="mr-2 h-4 w-4" /> Search
         </Button>
       </form>
-
       <div className="flex mb-8 gap-2">
         <Button
           onClick={() => handleMinRatingFilter(2)}
