@@ -7,6 +7,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useAppContext } from "@/providers/AppContextProvider";
 import { useAuth } from "react-oidc-context";
+import { z } from "zod";
+
+// Schemas
+const fileSchema = z
+  .instanceof(File)
+  .refine((file) => file.size < 5 * 1024 * 1024, "File size must be under 5MB")
+  .refine((file) => file.type.startsWith("image/"), "Must be an image");
+
+const responseSchema = z.object({
+  url: z.string().url(),
+  id: z.string(),
+  filename: z.string(),
+});
+
+const filenameSchema = z
+  .string()
+  .min(1)
+  .regex(/^[\w,\s-]+\.[A-Za-z]{3,4}$/);
 
 export default function ImageUploadTestPage() {
   const { apiService } = useAppContext();
@@ -15,25 +33,17 @@ export default function ImageUploadTestPage() {
     signinRedirect,
     isLoading: isAuthLoading,
   } = useAuth();
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [response, setResponse] = useState<{
-    status: number;
-    timing: string;
-    data: any;
-  } | null>(null);
+  const [response, setResponse] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<{
-    status: number;
-    message: string;
-    details: any;
-  } | null>(null);
-  const [fileName, setFileName] = useState("");
-  const [retrievedImage, setRetrievedImage] = useState(null);
-  const [retrieveError, setRetrieveError] = useState(null);
+  const [error, setError] = useState<any>(null);
+  const [filename, setFileName] = useState("");
+  const [retrievedImage, setRetrievedImage] = useState<string | null>(null);
+  const [retrieveError, setRetrieveError] = useState<string | null>(null);
 
   useEffect(() => {
     const doUseEffect = async () => {
-      // Add a check for the loading state.
       if (!isAuthenticated && !isAuthLoading) {
         await signinRedirect();
       }
@@ -43,46 +53,48 @@ export default function ImageUploadTestPage() {
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-
-    setSelectedFile(file);
     setResponse(null);
     setError(null);
+
+    if (!file) {
+      setSelectedFile(null);
+      return;
+    }
+
+    const parsed = fileSchema.safeParse(file);
+    if (!parsed.success) {
+      setError({ message: parsed.error.errors[0].message });
+      setSelectedFile(null);
+    } else {
+      setSelectedFile(file);
+    }
   };
 
   const handleUpload = async () => {
-    console.log("Upload button clicked");
-
-    if (!selectedFile || !apiService) {
-      console.log("No file selected or not apiService: ", {
-        selectedFile,
-        apiService,
-      });
-      return;
-    }
+    if (!selectedFile || !apiService) return;
 
     setIsLoading(true);
     setError(null);
 
     try {
-      console.log("Attempting to upload file: ", selectedFile);
       const startTime = performance.now();
       const photo = await apiService.uploadPhoto(selectedFile);
       const endTime = performance.now();
 
-      console.log("Upload successful: ", photo);
+      const parsed = responseSchema.safeParse(photo);
+      if (!parsed.success) {
+        throw new Error("Invalid response structure");
+      }
 
       setResponse({
         status: 200,
         timing: `${(endTime - startTime).toFixed(2)}ms`,
-        data: photo,
+        data: parsed.data,
       });
-    } catch (err) {
-      console.log("Upload failed: ", err);
+    } catch (err: any) {
       setError({
         status: err.status || 500,
-        message: err.message || "Unknown error occured",
-        details: err.details || {},
+        message: err.message || "Unknown error occurred",
       });
     } finally {
       setIsLoading(false);
@@ -90,22 +102,26 @@ export default function ImageUploadTestPage() {
   };
 
   const handleRetrievePhoto = async () => {
-    if (!fileName.trim()) return;
+    if (!filename.trim()) return;
+
+    const parsed = filenameSchema.safeParse(filename);
+    if (!parsed.success) {
+      setRetrieveError("Invalid filename format.");
+      return;
+    }
 
     setRetrievedImage(null);
     setRetrieveError(null);
 
     try {
-      const response = await fetch(`/api/photos/${fileName}`);
+      const res = await fetch(`/api/photos/${filename}`);
+      if (!res.ok)
+        throw new Error(`Failed to retrieve photo: ${res.statusText}`);
 
-      if (!response.ok) {
-        throw new Error(`Failed to retrieve photo: ${response.statusText}`);
-      }
-
-      const imageBlob = await response.blob();
-      const imageUrl = URL.createObjectURL(imageBlob);
+      const blob = await res.blob();
+      const imageUrl = URL.createObjectURL(blob);
       setRetrievedImage(imageUrl);
-    } catch (err) {
+    } catch (err: any) {
       setRetrieveError(err.message);
     }
   };
@@ -117,7 +133,6 @@ export default function ImageUploadTestPage() {
           <CardTitle>Image Upload Test Interface</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Upload Section */}
           <div className="border-2 border-dashed rounded-lg p-8">
             <div className="flex flex-col items-center justify-center gap-4">
               <Upload className="w-12 h-12 text-gray-400" />
@@ -141,7 +156,6 @@ export default function ImageUploadTestPage() {
             </div>
           </div>
 
-          {/* Upload Button */}
           <Button
             onClick={handleUpload}
             disabled={!selectedFile || isLoading}
@@ -150,7 +164,6 @@ export default function ImageUploadTestPage() {
             {isLoading ? "Uploading..." : "Upload Image"}
           </Button>
 
-          {/* Response Display */}
           {(response || error) && (
             <div className="mt-8">
               <h3 className="text-lg font-semibold mb-2">Response Details</h3>
@@ -162,20 +175,19 @@ export default function ImageUploadTestPage() {
             </div>
           )}
 
-          {/* Photo Retrieval Section */}
           <div className="border-t pt-6">
             <h3 className="text-lg font-semibold mb-4">Retrieve Photo</h3>
             <div className="flex gap-2">
               <Input
                 type="text"
-                placeholder="Enter filename (e.g., some-photo.png)"
-                value={fileName}
+                placeholder="Enter filename (e.g., photo.jpg)"
+                value={filename}
                 onChange={(e) => setFileName(e.target.value)}
                 className="flex-1"
               />
               <Button
                 onClick={handleRetrievePhoto}
-                disabled={!fileName.trim()}
+                disabled={!filename.trim()}
                 className="flex items-center gap-2"
               >
                 <Search className="w-4 h-4" />
