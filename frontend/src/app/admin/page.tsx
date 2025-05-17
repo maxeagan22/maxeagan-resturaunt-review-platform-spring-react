@@ -10,22 +10,35 @@ import { useAuth } from "react-oidc-context";
 import { z } from "zod";
 
 // Schemas
+// Validate uploaded file: must be an image under 5MB.
 const fileSchema = z
   .instanceof(File)
   .refine((file) => file.size < 5 * 1024 * 1024, "File size must be under 5MB")
   .refine((file) => file.type.startsWith("image/"), "Must be an image");
 
+// Validate shape of the API response after upload
 const responseSchema = z.object({
   url: z.string().url(),
   id: z.string(),
   filename: z.string(),
 });
 
+// Ensure the filename input has a valid format (e.g., my-photo.png).
 const filenameSchema = z
   .string()
   .min(1)
   .regex(/^[\w,\s-]+\.[A-Za-z]{3,4}$/);
 
+/**
+ * ImageUploadTestPage
+ *
+ * This component allows authenticated users to:
+ * 1. Upload an image file (validated with Zod for size/type).
+ * 2. Display the API's response (validated with Zod schema).
+ * 3. Retrieve and display a previously uploaded image by filename.
+ *
+ * Used in dev/test scenarios to validate upload + retrieval flow.
+ */
 export default function ImageUploadTestPage() {
   const { apiService } = useAppContext();
   const {
@@ -51,6 +64,8 @@ export default function ImageUploadTestPage() {
     doUseEffect();
   }, [isAuthenticated, isAuthLoading, signinRedirect]);
 
+  // When a user selects a file, validate it immediately.
+  // If invalid, reset selection and show error.
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     setResponse(null);
@@ -70,6 +85,7 @@ export default function ImageUploadTestPage() {
     }
   };
 
+  // Uploads selected image to the API after validating it.
   const handleUpload = async () => {
     if (!selectedFile || !apiService) return;
 
@@ -101,6 +117,8 @@ export default function ImageUploadTestPage() {
     }
   };
 
+  // Retrieves an image by filename if the input is valid.
+  // Shows error if fetch fails or filename is malformed.
   const handleRetrievePhoto = async () => {
     if (!filename.trim()) return;
 
