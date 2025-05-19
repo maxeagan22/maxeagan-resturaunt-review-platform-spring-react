@@ -6,6 +6,10 @@ import dynamic from "next/dynamic";
 import { MapPin } from "lucide-react";
 import ReactDOMServer from "react-dom/server";
 
+interface OpenStreetMapProps {
+  location: GeoLocation;
+}
+
 /**
  * OpenStreetMap
  *
@@ -33,11 +37,6 @@ import ReactDOMServer from "react-dom/server";
  *   - Adds a single custom marker at the specified coordinates.
  */
 
-interface OpenStreetMapProps {
-  location: GeoLocation;
-}
-
-// Create a component that will only be rendered on the client side
 const MapComponent = ({ location }: OpenStreetMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [isClient, setIsClient] = useState(false);
@@ -52,7 +51,7 @@ const MapComponent = ({ location }: OpenStreetMapProps) => {
     const initializeMap = async () => {
       if (location && location.latitude && location.longitude) {
         // Dynamically import Leaflet
-        const L = await import("leaflet");
+        const L = (await import("leaflet")).default;
         // Import the CSS
         await import("leaflet/dist/leaflet.css");
 

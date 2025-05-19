@@ -19,43 +19,43 @@ export const restaurantSchema = z.object({
         openTime: z.string(),
         closeTime: z.string(),
       })
-      .nullable(),
+      .optional(),
     tuesday: z
       .object({
         openTime: z.string(),
         closeTime: z.string(),
       })
-      .nullable(),
+      .optional(),
     wednesday: z
       .object({
         openTime: z.string(),
         closeTime: z.string(),
       })
-      .nullable(),
+      .optional(),
     thursday: z
       .object({
         openTime: z.string(),
         closeTime: z.string(),
       })
-      .nullable(),
+      .optional(),
     friday: z
       .object({
         openTime: z.string(),
         closeTime: z.string(),
       })
-      .nullable(),
+      .optional(),
     saturday: z
       .object({
         openTime: z.string(),
         closeTime: z.string(),
       })
-      .nullable(),
+      .optional(),
     sunday: z
       .object({
         openTime: z.string(),
         closeTime: z.string(),
       })
-      .nullable(),
+      .optional(),
   }),
   photos: z.array(z.string()),
 });

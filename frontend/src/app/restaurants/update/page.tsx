@@ -36,13 +36,13 @@ export default function UpdateRestaurantPage() {
         country: "",
       },
       operatingHours: {
-        monday: null,
-        tuesday: null,
-        wednesday: null,
-        thursday: null,
-        friday: null,
-        saturday: null,
-        sunday: null,
+        monday: undefined,
+        tuesday: undefined,
+        wednesday: undefined,
+        thursday: undefined,
+        friday: undefined,
+        saturday: undefined,
+        sunday: undefined,
       },
       photos: [],
     },
@@ -164,5 +164,3 @@ export default function UpdateRestaurantPage() {
     </div>
   );
 }
-
-// {restaurantId ? "Update a Restaurant" : "Create a Restaurant"}

@@ -30,13 +30,14 @@ export default function CreateRestaurantPage() {
         country: "",
       },
       operatingHours: {
-        monday: null,
-        tuesday: null,
-        wednesday: null,
-        thursday: null,
-        friday: null,
-        saturday: null,
-        sunday: null,
+          monday: { openTime: string; closeTime: string } | null;
+    tuesday: { openTime: string; closeTime: string } | null;
+    wednesday: { openTime: string; closeTime: string } | null;
+    thursday: { openTime: string; closeTime: string } | null;
+    friday: { openTime: string; closeTime: string } | null;
+    saturday: { openTime: string; closeTime: string } | null;
+    sunday: { openTime: string; closeTime: string } | null;
+
       },
       photos: [],
     },
@@ -46,6 +47,7 @@ export default function CreateRestaurantPage() {
     if (!apiService) throw new Error("API service not available.");
     return apiService.uploadPhoto(file, caption);
   };
+
 
   const onSubmit = async (data: RestaurantFormData) => {
     try {
