@@ -13,7 +13,7 @@ import {
   UpdateReviewRequest,
 } from "@/domain/domain";
 
-// Api service interface
+// API Service interface
 export interface ApiService {
   // Restaurant endpoints
   searchRestaurants(
@@ -22,7 +22,7 @@ export interface ApiService {
 
   getRestaurant(restaurantId: string): Promise<Restaurant>;
 
-  createRestaurant(request: CreateReviewRequest): Promise<Restaurant>;
+  createRestaurant(request: CreateRestaurantRequest): Promise<Restaurant>;
 
   updateRestaurant(
     restaurantId: string,
@@ -31,24 +31,22 @@ export interface ApiService {
 
   deleteRestaurant(restaurantId: string): Promise<void>;
 
+  // Review endpoints
   getRestaurantReviews(
     restaurantId: string,
     sort?: "datePosted,desc" | "datePosted,asc" | "rating,desc" | "rating,asc",
     page?: number,
     size?: number
   ): Promise<PaginatedResponse<Review>>;
-
   getRestaurantReview(restaurantId: string, reviewId: string): Promise<Review>;
-
   createReview(
     restaurantId: string,
     request: CreateReviewRequest
   ): Promise<Review>;
-
   updateReview(
     restaurantId: string,
     reviewId: string,
-    request: UpdateRestaurantRequest
+    request: UpdateReviewRequest
   ): Promise<void>;
 
   deleteReview(restaurantId: string, reviewId: string): Promise<void>;

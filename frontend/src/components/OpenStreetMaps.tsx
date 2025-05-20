@@ -5,6 +5,7 @@ import { GeoLocation } from "@/domain/domain";
 import dynamic from "next/dynamic";
 import { MapPin } from "lucide-react";
 import ReactDOMServer from "react-dom/server";
+import "leaflet/dist/leaflet.css";
 
 interface OpenStreetMapProps {
   location: GeoLocation;
