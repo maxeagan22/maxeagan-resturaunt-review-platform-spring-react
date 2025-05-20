@@ -5,10 +5,16 @@ import { Card } from "@/components/ui/card";
 import { RestaurantSummary } from "@/domain/domain";
 
 interface RestaurantCardProps {
+  // Restaurant summary data to display.
   restaurant: RestaurantSummary;
 }
 
-const getImage = (restaurant: RestaurantSummary) => {
+/**
+ * Returns the URL of the first photo of the restaurant if available.
+ * @param restaurant - The restaurant summary object.
+ * @returns URL string or null if no photo exists.
+ */
+const getImage = (restaurant: RestaurantSummary): string | null => {
   if (
     restaurant.photos &&
     null != restaurant.photos[0] &&
@@ -20,16 +26,21 @@ const getImage = (restaurant: RestaurantSummary) => {
   }
 };
 
+/**
+ * Component that renders a clickable card summarizing a restaurant.
+ * Shows restaurant name, location, main photo, rating stars, cuisine type,
+ * and action buttons for like and share (non-functional).
+ *
+ * @param props - Component props.
+ * @param props.restaurant - The restaurant data to display.
+ * @returns JSX.Element - Rendered restaurant card.
+ */
 export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
   return (
     <Link href={`/restaurants/${restaurant.id}`}>
       <Card className="overflow-hidden hover:shadow-lg transition-shadow">
         <div className="p-4">
           <div className="flex items-center gap-3 mb-4">
-            {/* <Avatar>
-              <AvatarImage src={restaurant.latestReview?.user.avatar} />
-              <AvatarFallback>{restaurant.latestReview?.user.name[0]}</AvatarFallback>
-            </Avatar> */}
             <div>
               <p className="font-medium">{restaurant.name}</p>
               <p className="text-sm text-muted-foreground">
@@ -61,7 +72,6 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
             ))}
           </div>
           <p className="text-sm text-muted-foreground mb-4">
-            {/* {restaurant.latestReview?.content} */}
             {restaurant.cuisineType} Cuisine
           </p>
           <div className="flex justify-between border-t pt-4">
