@@ -11,18 +11,18 @@ import axios from "axios";
 import { restaurantSchema, RestaurantFormData } from "@/schemas/restuarant";
 
 /**
- * Page component for creating a new restaurant.
+ * Page for creating a new restaurant.
  *
  * - Uses React Hook Form with Zod for schema validation.
  * - Sends the form data to API on submit.
- * - Handles file uploads through `uploadPhoto`.
+ * - Handles file uploads through uploadPhoto.
  * - Displays any errors returned from the API.
  */
 export default function CreateRestaurantPage() {
   const { apiService } = useAppContext();
   const [error, setError] = useState<string | undefined>();
 
-  // Initialize form with default values and zod validation
+  // Initialize form with default values and zod validation.
   const methods = useForm<RestaurantFormData>({
     resolver: zodResolver(restaurantSchema),
     defaultValues: {

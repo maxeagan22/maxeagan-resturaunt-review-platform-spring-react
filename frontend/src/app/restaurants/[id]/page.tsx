@@ -64,7 +64,7 @@ export default function RestaurantPage({ params }: { params: { id: string } }) {
   );
   const [reviewToDelete, setReviewToDelete] = useState<Review | null>(null);
 
-  /** Fetches restaurant and nearby data */
+  // Fetches restaurant and nearby data.
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -90,7 +90,7 @@ export default function RestaurantPage({ params }: { params: { id: string } }) {
     fetchData();
   }, [params.id, apiService]);
 
-  /** Fetches sorted reviews whenever sort order or ID changes */
+  // Fetches sorted reviews whenever sort order or ID changes.
   useEffect(() => {
     const fetchReviews = async () => {
       try {
@@ -144,7 +144,7 @@ export default function RestaurantPage({ params }: { params: { id: string } }) {
     router.push(`/restaurants/update?id=${restaurantId}`);
   };
 
-  /** Deletes a restaurant and navigates home */
+  // Deletes a restaurant and navigates home.
   const handleDeleteRestaurant = async () => {
     if (restaurant) {
       await apiService?.deleteRestaurant(restaurant.id);
@@ -152,7 +152,7 @@ export default function RestaurantPage({ params }: { params: { id: string } }) {
     }
   };
 
-  /** Deletes a review and updates state */
+  // Deletes a review and updates state.
   const handleDeleteReview = async () => {
     if (restaurant && reviewToDelete) {
       await apiService?.deleteReview(restaurant.id, reviewToDelete.id);
@@ -191,7 +191,7 @@ export default function RestaurantPage({ params }: { params: { id: string } }) {
     router.push(`/restaurants/${params.id}/review?reviewId=${review.id}`);
   };
 
-  /** Toggles sort between newest/oldest */
+  // Toggles sort between newest/oldest.
   const toggleDateSort = () => {
     setSortOrder((current) =>
       current.startsWith("datePosted")
@@ -202,7 +202,7 @@ export default function RestaurantPage({ params }: { params: { id: string } }) {
     );
   };
 
-  /** Toggles sort between highest/lowest rating */
+  // Toggles sort between highest/lowest rating.
   const toggleRatingSort = () => {
     setSortOrder((current) =>
       current.startsWith("rating")
@@ -213,7 +213,7 @@ export default function RestaurantPage({ params }: { params: { id: string } }) {
     );
   };
 
-  /** Returns human-readable sort label */
+  // Returns human-readable sort label.
   const getSortLabel = (): string => {
     switch (sortOrder) {
       case "datePosted,desc":
@@ -228,8 +228,6 @@ export default function RestaurantPage({ params }: { params: { id: string } }) {
         return "Sort";
     }
   };
-
-  // ... render logic follows (not changed)
 
   if (loading || null == restaurant) {
     return (

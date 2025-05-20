@@ -23,6 +23,10 @@ import {
   removePhotoByIndex,
 } from "@/lib/photoHelpers";
 
+/**
+ * Review form page for creating or editing a restaurant review.
+ * @param {{ params: { id: string } }} props - Contains the restaurant ID.
+ */
 export default function WriteReviewPage({
   params,
 }: {
@@ -30,8 +34,10 @@ export default function WriteReviewPage({
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+
   const reviewId = searchParams.get("reviewId");
   const isEditing = !!reviewId;
+
   const { apiService } = useAppContext();
 
   const [rating, setRating] = useState(0);
@@ -42,6 +48,7 @@ export default function WriteReviewPage({
   const [existingPhotos, setExistingPhotos] = useState<Photo[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Fetches existing review data if editing.
   useEffect(() => {
     const fetchReviewData = async () => {
       if (isEditing && apiService) {
@@ -69,6 +76,10 @@ export default function WriteReviewPage({
     fetchReviewData();
   }, [isEditing, reviewId, params.id, apiService]);
 
+  /**
+   * Handles image file input and creates preview thumbnails.
+   * @param {React.ChangeEvent<HTMLInputElement>} e
+   */
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     setImages((prev) => [...prev, ...files]);
@@ -76,9 +87,15 @@ export default function WriteReviewPage({
     setPreviews((prev) => [...prev, ...newPreviews]);
   };
 
+  /**
+   * Handles review form submission.
+   * Uploads new images, merges photo IDs, creates or updates review.
+   * @param {React.FormEvent} e
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!apiService) throw new Error("API Service not available");
+
     try {
       setIsSubmitting(true);
 
@@ -108,6 +125,10 @@ export default function WriteReviewPage({
     }
   };
 
+  /**
+   * Removes an image from preview and associated photo/image lists.
+   * @param {number} index - Index of image to remove.
+   */
   const handleRemovePhoto = (index: number) => {
     const result = removePhotoByIndex(index, previews, existingPhotos, images);
     setPreviews(result.previews);
@@ -126,6 +147,7 @@ export default function WriteReviewPage({
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Rating Section */}
             <div className="space-y-2">
               <Label>Your Rating</Label>
               <div className="flex gap-1">
@@ -150,6 +172,7 @@ export default function WriteReviewPage({
               </div>
             </div>
 
+            {/* Review Text Section */}
             <div className="space-y-2">
               <Label htmlFor="review">Your Review</Label>
               <Textarea
@@ -162,6 +185,7 @@ export default function WriteReviewPage({
               />
             </div>
 
+            {/* Image Upload Section */}
             <div className="space-y-2">
               <Label>Photos</Label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -203,6 +227,7 @@ export default function WriteReviewPage({
               </p>
             </div>
 
+            {/* Form Actions */}
             <div className="flex gap-4">
               <Button
                 type="button"

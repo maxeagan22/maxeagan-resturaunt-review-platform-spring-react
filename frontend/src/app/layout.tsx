@@ -4,13 +4,13 @@ import { AppContextProvider } from "@/providers/AppContextProvider";
 import "@/styles/globals.css";
 import { Inter } from "next/font/google";
 import Link from "next/link";
-import type React from "react"; // Import React for typing
+import type React from "react";
 
-// Load the Inter font from Google Fonts
+// Load the Inter font from Google Fonts.
 const inter = Inter({ subsets: ["latin"] });
 
 /**
- * Global site metadata for SEO and browser context
+ * Global site metadata for SEO and browser context.
  */
 export const metadata = {
   title: "GrubGrade",
