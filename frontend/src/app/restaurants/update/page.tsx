@@ -11,6 +11,15 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 
+/**
+ * Page for creating or updating a restaurant.
+ *
+ * - Uses `react-hook-form` with Zod schema for validation.
+ * - Fetches existing restaurant data if `id` is present in URL params.
+ * - Handles photo upload and restaurant form submission (create/update).
+ *
+ * @returns {JSX.Element} The page component
+ */
 export default function UpdateRestaurantPage() {
   const { apiService } = useAppContext();
   const router = useRouter();
@@ -20,6 +29,7 @@ export default function UpdateRestaurantPage() {
   const [error, setError] = useState<string | undefined>();
   const [loading, setLoading] = useState<boolean>(true);
 
+  // Initialize form with default empty values and validation schema
   const methods = useForm<RestaurantFormData>({
     resolver: zodResolver(restaurantSchema),
     defaultValues: {
@@ -48,6 +58,9 @@ export default function UpdateRestaurantPage() {
     },
   });
 
+  /**
+   * Fetch existing restaurant data and populate form if `restaurantId` is present.
+   */
   useEffect(() => {
     const fetchRestaurant = async () => {
       if (!apiService) return;
@@ -99,11 +112,24 @@ export default function UpdateRestaurantPage() {
     fetchRestaurant();
   }, [apiService, restaurantId, methods]);
 
+  /**
+   * Upload a photo file via API service.
+   *
+   * @param {File} file - The file to upload
+   * @param {string} [caption] - Optional caption for the photo
+   * @returns {Promise<Photo>} The uploaded photo object
+   */
   const uploadPhoto = async (file: File, caption?: string): Promise<Photo> => {
     if (!apiService) throw new Error("API Service not available");
     return apiService.uploadPhoto(file, caption);
   };
 
+  /**
+   * Submit handler for the restaurant form.
+   * Sends either a create or update request depending on presence of `restaurantId`.
+   *
+   * @param {RestaurantFormData} data - The form data
+   */
   const onSubmit = async (data: RestaurantFormData) => {
     try {
       if (!apiService) throw new Error("API Service not available");
