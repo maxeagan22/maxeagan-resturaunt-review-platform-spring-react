@@ -16,6 +16,12 @@ import {
 } from "@/components/ui/card";
 import { useAppContext } from "@/providers/AppContextProvider";
 import { Photo } from "@/domain/domain";
+import {
+  uploadPhoto,
+  createImagePreviews,
+  mergePhotoIds,
+  removePhotoByIndex,
+} from "@/lib/photoHelpers";
 
 export default function WriteReviewPage({
   params,
@@ -26,7 +32,6 @@ export default function WriteReviewPage({
   const searchParams = useSearchParams();
   const reviewId = searchParams.get("reviewId");
   const isEditing = !!reviewId;
-
   const { apiService } = useAppContext();
 
   const [rating, setRating] = useState(0);
@@ -45,11 +50,9 @@ export default function WriteReviewPage({
             params.id,
             reviewId
           );
-
           if (review) {
             setRating(review.rating);
             setContent(review.content);
-
             if (review.photos) {
               setExistingPhotos(review.photos);
               setPreviews(
@@ -66,46 +69,27 @@ export default function WriteReviewPage({
     fetchReviewData();
   }, [isEditing, reviewId, params.id, apiService]);
 
-  const uploadPhoto = async (file: File, caption?: string): Promise<string> => {
-    if (!apiService) {
-      throw Error("API Service not available!");
-    }
-    // Upload the photo and return the URL which is used as the ID
-    const response = await apiService.uploadPhoto(file, caption);
-    return response.url; // Return just the URL string which serves as the ID
-  };
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     setImages((prev) => [...prev, ...files]);
-
-    // Create preview URLs for the images
-    const newPreviews = files.map((file) => URL.createObjectURL(file));
+    const newPreviews = createImagePreviews(files);
     setPreviews((prev) => [...prev, ...newPreviews]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!apiService) {
-      throw Error("API Service not available!");
-    }
-
+    if (!apiService) throw new Error("API Service not available");
     try {
       setIsSubmitting(true);
 
-      // Upload all new images and get the URLs directly (which serve as IDs)
-      const newPhotoIds = await Promise.all(
-        images.map((file) => uploadPhoto(file))
+      const newPhotoUrls = await Promise.all(
+        images.map((file) => uploadPhoto(apiService, file))
       );
-
-      // Get IDs from existing photos (which are URLs)
-      const existingPhotoIds = existingPhotos.map((photo) => photo.url);
-      const allPhotoIds = [...existingPhotoIds, ...newPhotoIds];
+      const allPhotoIds = mergePhotoIds(existingPhotos, newPhotoUrls);
 
       const reviewData = {
-        content: content,
-        rating: rating,
+        content,
+        rating,
         photoIds: allPhotoIds,
       };
 
@@ -115,7 +99,6 @@ export default function WriteReviewPage({
         await apiService.createReview(params.id, reviewData);
       }
 
-      // Redirect back to restaurant page after submission
       router.push(`/restaurants/${params.id}`);
     } catch (error) {
       console.error("Error submitting review:", error);
@@ -125,17 +108,11 @@ export default function WriteReviewPage({
     }
   };
 
-  const removePhoto = (index: number) => {
-    if (index < existingPhotos.length) {
-      // Remove an existing photo
-      setExistingPhotos((current) => current.filter((_, i) => i !== index));
-      setPreviews((current) => current.filter((_, i) => i !== index));
-    } else {
-      // Remove a newly added photo
-      const adjustedIndex = index - existingPhotos.length;
-      setImages((current) => current.filter((_, i) => i !== adjustedIndex));
-      setPreviews((current) => current.filter((_, i) => i !== index));
-    }
+  const handleRemovePhoto = (index: number) => {
+    const result = removePhotoByIndex(index, previews, existingPhotos, images);
+    setPreviews(result.previews);
+    setExistingPhotos(result.existingPhotos);
+    setImages(result.newImages);
   };
 
   return (
@@ -198,7 +175,7 @@ export default function WriteReviewPage({
                     />
                     <button
                       type="button"
-                      onClick={() => removePhoto(index)}
+                      onClick={() => handleRemovePhoto(index)}
                       className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       ×
