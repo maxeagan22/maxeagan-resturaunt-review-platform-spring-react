@@ -11,9 +11,25 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "react-oidc-context";
 
+/**
+ * Authentication button component.
+ *
+ * Shows a "Login" button if the user is not authenticated.
+ * If authenticated, displays a user avatar as a dropdown trigger.
+ * The dropdown contains:
+ *  - Link to "Add Restaurant" page
+ *  - Logout option
+ *
+ * Handles login and logout via OIDC authentication flows.
+ *
+ * No props required.
+ */
 export default function AuthButton() {
   const { signinRedirect, signoutRedirect, isAuthenticated } = useAuth();
 
+  /**
+   * Initiates login flow via redirect.
+   */
   const handleLogin = async () => {
     try {
       await signinRedirect();
@@ -22,6 +38,9 @@ export default function AuthButton() {
     }
   };
 
+  /**
+   * Initiates logout flow via redirect.
+   */
   const handleLogout = async () => {
     try {
       await signoutRedirect();
