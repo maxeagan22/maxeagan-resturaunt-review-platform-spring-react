@@ -142,7 +142,7 @@ export class AxiosApiService implements ApiService {
   // Endpoint to add(create) a new restaurant.
   // Using HTTP POST method.
   public async createRestaurant(
-    request: CreateReviewRequest
+    request: CreateRestaurantRequest
   ): Promise<Restaurant> {
     const response: AxiosResponse<Restaurant> = await this.api.post(
       "/restaurants",
@@ -174,12 +174,12 @@ export class AxiosApiService implements ApiService {
   // Endpoint to get a reveiw for a specific restaurant.
   public async getRestaurantReviews(
     restaurantId: string,
-    sort?: "datePosted,desc" | "datePosted,asc" | "rating.desc" | "rating,asc",
+    sort?: "datePosted,desc" | "datePosted,asc" | "rating,desc" | "rating,asc",
     page?: number,
     size?: number
   ): Promise<PaginatedResponse<Review>> {
     const response: AxiosResponse<PaginatedResponse<Review>> =
-      await this.api.get(`/restauraunts/${restaurantId}/reviews`, {
+      await this.api.get(`/restaurants"/${restaurantId}/reviews`, {
         params: { sort, page, size },
       });
     return response.data;
@@ -212,7 +212,7 @@ export class AxiosApiService implements ApiService {
   public async updateReview(
     restaurantId: string,
     reviewId: string,
-    request: UpdateRestaurantRequest
+    request: UpdateReviewRequest
   ): Promise<void> {
     const response: AxiosResponse<Review> = await this.api.put(
       `/restaurants/${restaurantId}/reviews/${reviewId}`,
