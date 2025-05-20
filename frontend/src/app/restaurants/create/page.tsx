@@ -10,10 +10,19 @@ import { useState } from "react";
 import axios from "axios";
 import { restaurantSchema, RestaurantFormData } from "@/schemas/restuarant";
 
+/**
+ * Page component for creating a new restaurant.
+ *
+ * - Uses React Hook Form with Zod for schema validation.
+ * - Sends the form data to API on submit.
+ * - Handles file uploads through `uploadPhoto`.
+ * - Displays any errors returned from the API.
+ */
 export default function CreateRestaurantPage() {
   const { apiService } = useAppContext();
   const [error, setError] = useState<string | undefined>();
 
+  // Initialize form with default values and zod validation
   const methods = useForm<RestaurantFormData>({
     resolver: zodResolver(restaurantSchema),
     defaultValues: {
@@ -42,11 +51,23 @@ export default function CreateRestaurantPage() {
     },
   });
 
+  /**
+   * Uploads a photo to the backend using the API service.
+   *
+   * @param {File} file - Image file to upload
+   * @param {string} [caption] - Optional caption
+   * @returns {Promise<Photo>} The uploaded photo metadata
+   */
   const uploadPhoto = async (file: File, caption?: string): Promise<Photo> => {
     if (!apiService) throw new Error("API service not available.");
     return apiService.uploadPhoto(file, caption);
   };
 
+  /**
+   * Handles form submission and sends data to the backend.
+   *
+   * @param {RestaurantFormData} data - Validated form data
+   */
   const onSubmit = async (data: RestaurantFormData) => {
     try {
       if (!apiService) throw new Error("API service not available.");
