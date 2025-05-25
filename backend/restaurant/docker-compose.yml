@@ -46,11 +46,12 @@ services:
       - keycloak-data:/opt/keycloak/data # Persist H2 database and config.
     command:
       - start-dev # Start keycloak in dev mode (disables HTTPs, enables bug tools).
-      - --db=dev-file # Set dev DB mode 
+      - --db=dev-file # Set dev DB mode
 
 volumes:
   elasticsearch-data:
     driver: local
+  keycloak-data:
 
 networks:
   elastic:
