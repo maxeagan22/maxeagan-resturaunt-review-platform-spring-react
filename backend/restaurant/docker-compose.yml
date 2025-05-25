@@ -1,5 +1,3 @@
-version: '3.8'  # Docker Compose file version
-
 services:
   elasticsearch:
     # Elasticsearch service for local development
@@ -35,3 +33,25 @@ services:
       - elasticsearch
     networks:
       - elastic
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0 #Keycloak version 23.0 from offical Quay repo.
+    ports:
+      - "9090:8080" # Expose container port 8080 on host port 9090
+    environment:
+      KEYCLOAK_ADMIN: admin # Default admin username.
+      KEYCLOAK_ADMIN_PASSWORD: admin # Default admin password (change in prod).
+      KC_DB: h2-file # Use H2 file based dev database (not going to be used in prod).
+    volumes:
+      - keycloak-data:/opt/keycloak/data # Persist H2 database and config.
+    command:
+      - start-dev # Start keycloak in dev mode (disables HTTPs, enables bug tools).
+      - --db=dev-file # Set dev DB mode 
+
+volumes:
+  elasticsearch-data:
+    driver: local
+
+networks:
+  elastic:
+    driver: bridge
