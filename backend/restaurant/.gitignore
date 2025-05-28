@@ -31,3 +31,12 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# .gitignore
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+*.svg
+/uploads/
