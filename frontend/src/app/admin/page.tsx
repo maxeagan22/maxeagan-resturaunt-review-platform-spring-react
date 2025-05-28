@@ -8,6 +8,16 @@ import { Input } from "@/components/ui/input";
 import { useAppContext } from "@/providers/AppContextProvider";
 import { useAuth } from "react-oidc-context";
 
+/**
+ * ImageUploadTestPage
+ *
+ * Test interface for uploading and retrieving images using the API.
+ * - Authenticates user before any action
+ * - Allows user to select and upload an image (uses apiService.uploadPhoto)
+ * - Allows user to retrieve an image by filename (via GET request)
+ *
+ * This is a dev/debugging tool. Not meant for production usage.
+ */
 export default function ImageUploadTestPage() {
   const { apiService } = useAppContext();
   const {
@@ -16,17 +26,22 @@ export default function ImageUploadTestPage() {
     isLoading: isAuthLoading,
   } = useAuth();
 
+  // Upload states
   const [selectedFile, setSelectedFile] = useState(null);
   const [response, setResponse] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Retrieval states
   const [filename, setFilename] = useState("");
   const [retrievedImage, setRetrievedImage] = useState(null);
   const [retrieveError, setRetrieveError] = useState(null);
 
+  /**
+   * On mount, redirect to login if not authenticated
+   */
   useEffect(() => {
     const doUseEffect = async () => {
-      // Add a check for loading state
       if (!isAuthenticated && !isAuthLoading) {
         await signinRedirect();
       }
@@ -34,6 +49,9 @@ export default function ImageUploadTestPage() {
     doUseEffect();
   }, [isAuthenticated, isAuthLoading, signinRedirect]);
 
+  /**
+   * Handles file input selection
+   */
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
     setSelectedFile(file);
@@ -41,6 +59,9 @@ export default function ImageUploadTestPage() {
     setError(null);
   };
 
+  /**
+   * Uploads the selected file via apiService
+   */
   const handleUpload = async () => {
     console.log("Upload button clicked");
 
@@ -80,6 +101,9 @@ export default function ImageUploadTestPage() {
     }
   };
 
+  /**
+   * Fetches an image from the API by filename
+   */
   const handleRetrievePhoto = async () => {
     if (!filename.trim()) return;
 
@@ -141,7 +165,7 @@ export default function ImageUploadTestPage() {
             {isLoading ? "Uploading..." : "Upload Image"}
           </Button>
 
-          {/* Response Display */}
+          {/* Response or Error Output */}
           {(response || error) && (
             <div className="mt-8">
               <h3 className="text-lg font-semibold mb-2">Response Details</h3>
@@ -153,7 +177,7 @@ export default function ImageUploadTestPage() {
             </div>
           )}
 
-          {/* Photo Retrieval Section */}
+          {/* Retrieval Section */}
           <div className="border-t pt-6">
             <h3 className="text-lg font-semibold mb-4">Retrieve Photo</h3>
             <div className="flex gap-2">
