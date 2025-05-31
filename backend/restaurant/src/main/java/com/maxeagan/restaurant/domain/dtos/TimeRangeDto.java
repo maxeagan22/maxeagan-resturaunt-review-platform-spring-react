@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class TimeRangeDto {
-    
+
     @NotBlank(message = "Open time must be provided")
     @Pattern(regexp = "^([01]?[0-9]|2[0-3]):[0-5][0-9]$", message = "Open time must be in HH:mm format")
     private String openTime;
