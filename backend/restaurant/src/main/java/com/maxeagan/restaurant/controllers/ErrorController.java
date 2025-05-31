@@ -5,9 +5,12 @@ import com.maxeagan.restaurant.exceptions.StorageException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.stream.Collectors;
 
 /**
  * Global error handler for REST controllers.
@@ -21,6 +24,36 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 @Slf4j
 public class ErrorController {
+
+    /**
+     * Handles validation errors thrown when method arguments annotated with {@code @Valid} fail validation.
+     * <p>
+     * Specifically handles {@link MethodArgumentNotValidException}, which is typically thrown when
+     * request body validation fails (e.g., invalid input in DTO fields).
+     * <p>
+     * Aggregates all field validation errors into a single error message string and returns it in a
+     * structured {@link ErrorDto} with HTTP 400 (Bad Request) status.
+     *
+     * @param ex the exception containing details of validation failures
+     * @return ResponseEntity containing a structured error message and 400 status code
+     */
+    public ResponseEntity<ErrorDto> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+        log.error("Caught MethodArgumentNotValidException");
+
+        String errorMessage = ex
+                .getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .collect(Collectors.joining(", "));
+
+        ErrorDto errorDto = ErrorDto.builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .message(errorMessage)
+                .build();
+
+        return new ResponseEntity<>(errorDto, HttpStatus.BAD_REQUEST);
+    }
 
     /**
      * Handles storage-related exceptions (e.g., file I/O, disk issues).
