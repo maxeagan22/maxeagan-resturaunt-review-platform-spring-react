@@ -2,6 +2,8 @@ package com.maxeagan.restaurant.services;
 
 import com.maxeagan.restaurant.domain.RestaurantCreateUpdateRequest;
 import com.maxeagan.restaurant.domain.entities.Restaurant;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Service interface for managing restaurant-related operations.
@@ -22,4 +24,13 @@ public interface RestaurantService {
      * @return the newly created and persisted {@link Restaurant} entity
      */
     Restaurant createRestaurant(RestaurantCreateUpdateRequest request);
+
+    Page<Restaurant> searchRestaurants(
+            String query,
+            Float minRating,
+            Float latitude,
+            Float longitude,
+            Float radius,
+            Pageable pageable
+    );
 }

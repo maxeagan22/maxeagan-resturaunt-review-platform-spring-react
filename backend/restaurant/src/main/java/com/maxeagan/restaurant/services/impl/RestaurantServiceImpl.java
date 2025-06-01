@@ -9,6 +9,8 @@ import com.maxeagan.restaurant.repositories.RestaurantRepository;
 import com.maxeagan.restaurant.services.GeoLocationService;
 import com.maxeagan.restaurant.services.RestaurantService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.geo.GeoPoint;
 import org.springframework.stereotype.Service;
 
@@ -67,4 +69,51 @@ public class RestaurantServiceImpl implements RestaurantService {
 
         return restaurantRepository.save(restaurant);
     }
+
+    /**
+     * Implements restaurant search logic based on multiple optional criteria:
+     * text query, minimum rating, and geographic proximity.
+     *
+     * <p>The method prioritizes filters in the following order:
+     * <ol>
+     *   <li>If {@code minRating} is provided but {@code query} is null or empty,
+     *       it returns restaurants with an average rating >= {@code minRating}.</li>
+     *   <li>If {@code query} is non-empty (regardless of whether {@code minRating} is set),
+     *       it performs a fuzzy search on name and cuisine type, filtered by {@code minRating}
+     *       (or 0 if null).</li>
+     *   <li>If geographic coordinates and a radius are provided (non-null),
+     *       it returns restaurants within the specified radius (in miles) of the location.</li>
+     *   <li>If no filters are provided, it returns all restaurants paginated.</li>
+     * </ol>
+     *
+     * @param query      optional search term to match against name or cuisine type (fuzzy)
+     * @param minRating  optional minimum average rating filter (inclusive)
+     * @param latitude   optional latitude for geo-distance filtering
+     * @param longitude  optional longitude for geo-distance filtering
+     * @param radius     optional radius (in miles) for geo-distance filtering
+     * @param pageable   pagination and sorting information
+     * @return a {@link Page} of {@link Restaurant} matching the applied criteria
+     */
+    @Override
+    public Page<Restaurant> searchRestaurants(
+            String query, Float minRating, Float latitude,
+            Float longitude, Float radius, Pageable pageable) {
+
+        if (null != minRating && (null == query || query.isEmpty())) {
+            return restaurantRepository.findByAverageRatingGreaterThanEqual(minRating, pageable);
+        }
+
+        Float searchMinRating = null == minRating ? 0f : minRating;
+
+        if (null != query && !query.trim().isEmpty()) {
+            return restaurantRepository.findByQueryAndMinRating(query, searchMinRating, pageable);
+        }
+
+        if (null != latitude && null != longitude && null != radius) {
+            return restaurantRepository.findByLocationNear(latitude, longitude, radius, pageable);
+        }
+
+        return restaurantRepository.findAll(pageable);
+    }
+
 }
