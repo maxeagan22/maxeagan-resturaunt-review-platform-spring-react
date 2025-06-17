@@ -75,4 +75,10 @@ public class RestaurantDto {
      * Information about the user who created the restaurant entry.
      */
     private UserDto createdBy;
+
+
+    /**
+     * Total number of reviews for a given restaurant.
+      */
+    private Integer totalReviews;
 }
