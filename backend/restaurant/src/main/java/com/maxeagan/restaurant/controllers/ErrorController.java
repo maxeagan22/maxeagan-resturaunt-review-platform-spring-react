@@ -37,7 +37,7 @@ public class ErrorController {
                 .build();
 
         return new ResponseEntity<>(errorDto, HttpStatus.BAD_REQUEST);
-        
+
     }
 
     /**
