@@ -103,11 +103,11 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public Optional<Review> getReview(String restaurantId, String reviewId) {
         Restaurant restaurant = getRestaurantOrThrow(restaurantId);
-        
+
         return restaurant.getReviews()
                 .stream()
                 .filter(r -> reviewId.equals(r.getId()))
-                .findFirst()
+                .findFirst();
     }
 
     private Restaurant getRestaurantOrThrow(String restaurantId) {
