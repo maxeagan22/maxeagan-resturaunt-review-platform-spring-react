@@ -94,26 +94,30 @@ public class RestaurantServiceImpl implements RestaurantService {
      * @param pageable   pagination and sorting information
      * @return a {@link Page} of {@link Restaurant} matching the applied criteria
      */
-    @Override
     public Page<Restaurant> searchRestaurants(
             String query, Float minRating, Float latitude,
             Float longitude, Float radius, Pageable pageable) {
 
-        if (null != minRating && (null == query || query.isEmpty())) {
-            return restaurantRepository.findByAverageRatingGreaterThanEqual(minRating, pageable);
-        }
+        Float searchMinRating = (minRating == null) ? 0f : minRating;
 
-        Float searchMinRating = null == minRating ? 0f : minRating;
-
-        if (null != query && !query.trim().isEmpty()) {
+        // Full-featured fuzzy search with rating
+        if (query != null && !query.trim().isEmpty()) {
             return restaurantRepository.findByQueryAndMinRating(query, searchMinRating, pageable);
         }
 
-        if (null != latitude && null != longitude && null != radius) {
+        // Geo search
+        if (latitude != null && longitude != null && radius != null) {
             return restaurantRepository.findByLocationNear(latitude, longitude, radius, pageable);
         }
 
+        // Just rating
+        if (minRating != null) {
+            return restaurantRepository.findByAverageRatingGreaterThanEqual(minRating, pageable);
+        }
+
+        // Default fallback
         return restaurantRepository.findAll(pageable);
     }
+
 
 }

@@ -5,6 +5,7 @@ import com.maxeagan.restaurant.domain.entities.Address;
 import com.maxeagan.restaurant.domain.entities.OperatingHours;
 import com.maxeagan.restaurant.domain.entities.Photo;
 import com.maxeagan.restaurant.domain.entities.TimeRange;
+import com.maxeagan.restaurant.repositories.RestaurantRepository;
 import com.maxeagan.restaurant.services.PhotoService;
 import com.maxeagan.restaurant.services.RestaurantService;
 import com.maxeagan.restaurant.services.impl.RandomKansasCityGeoLocationService;

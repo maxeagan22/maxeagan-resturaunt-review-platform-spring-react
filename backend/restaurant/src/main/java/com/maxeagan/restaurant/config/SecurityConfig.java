@@ -11,7 +11,6 @@ import org.springframework.security.web.SecurityFilterChain;
 
 /**
  * Configures Spring Security for the application.
- *
  * - Enforces authentication on all HTTP requests.
  * - Configures OAuth2 Resource Server with JWT token support.
  * - Sets session management to stateless (no HTTP sessions).
@@ -37,6 +36,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, "/api/photos/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/restaurants/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
