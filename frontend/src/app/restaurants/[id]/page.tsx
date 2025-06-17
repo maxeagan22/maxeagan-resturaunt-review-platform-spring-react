@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -43,6 +44,9 @@ import {
  * @param {{ params: { id: string } }} props - The dynamic route params, containing the restaurant ID.
  */
 export default function RestaurantPage({ params }: { params: { id: string } }) {
+  const unwrappedParams = React.use(params);
+  const id = unwrappedParams.id;
+
   const { apiService } = useAppContext();
   const { isAuthenticated, signinRedirect } = useAuth();
   const router = useRouter();
@@ -53,34 +57,37 @@ export default function RestaurantPage({ params }: { params: { id: string } }) {
     RestaurantSummary[] | null
   >(null);
   const [reviews, setReviews] = useState<Review[]>([]);
-
   const [sortOrder, setSortOrder] = useState<
     "datePosted,desc" | "datePosted,asc" | "rating,desc" | "rating,asc"
   >("datePosted,desc");
 
+  // State for the delete modal
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteType, setDeleteType] = useState<"restaurant" | "review">(
     "restaurant"
   );
   const [reviewToDelete, setReviewToDelete] = useState<Review | null>(null);
 
-  // Fetches restaurant and nearby data.
   useEffect(() => {
     const fetchData = async () => {
       try {
-        if (!apiService) throw new Error("API Service not available!");
-
-        const restaurant = await apiService.getRestaurant(params.id);
+        if (null == apiService) {
+          throw Error("API Service not available!");
+        }
+        const restaurant = await apiService.getRestaurant(id);
         setRestaurant(restaurant);
 
-        const nearby = await apiService.searchRestaurants({
+        const restaurantsNearBy = await apiService.searchRestaurants({
           latitude: restaurant.geoLocation?.latitude,
           longitude: restaurant.geoLocation?.longitude,
           radius: 20,
         });
 
-        setRestaurantsNear(nearby.content);
-        setReviews(restaurant.reviews || []);
+        setRestaurantsNear(restaurantsNearBy.content);
+
+        if (restaurant.reviews) {
+          setReviews(restaurant.reviews);
+        }
         setLoading(false);
       } catch (error) {
         console.error("Error fetching restaurant data:", error);
@@ -88,46 +95,47 @@ export default function RestaurantPage({ params }: { params: { id: string } }) {
       }
     };
     fetchData();
-  }, [params.id, apiService]);
+  }, [id, apiService]);
 
-  // Fetches sorted reviews whenever sort order or ID changes.
   useEffect(() => {
     const fetchReviews = async () => {
       try {
         if (apiService && restaurant) {
-          const response = await apiService.getRestaurantReviews(
-            params.id,
+          const reviewsResponse = await apiService.getRestaurantReviews(
+            id,
             sortOrder
           );
-          if (Array.isArray(response?.content)) {
-            setReviews(response.content);
+          if (reviewsResponse && Array.isArray(reviewsResponse.content)) {
+            setReviews(reviewsResponse.content);
           } else {
-            console.error("Unexpected reviews response format:", response);
+            console.error(
+              "Unexpected reviews response format:",
+              reviewsResponse
+            );
             setReviews(restaurant.reviews || []);
           }
         }
       } catch (error) {
         console.error("Error fetching reviews:", error);
-        setReviews(restaurant?.reviews || []);
+        if (restaurant?.reviews) {
+          setReviews(restaurant.reviews);
+        }
       }
     };
     fetchReviews();
-  }, [sortOrder, params.id, restaurant, apiService]);
+  }, [sortOrder, id, restaurant, apiService]);
 
-  /**
-   * Returns the main image URL for a restaurant.
-   * @param {Restaurant} restaurant
-   * @returns {string | null}
-   */
-  const getImageUrl = (restaurant: Restaurant): string | null => {
-    const url = restaurant.photos?.[0]?.url;
-    return url ? `/api/photos/${url}` : null;
+  const getImageUrl = (restaurant: Restaurant) => {
+    if (
+      null != restaurant.photos &&
+      restaurant.photos.length > 0 &&
+      null != restaurant.photos[0].url
+    ) {
+      return `/api/photos/${restaurant.photos[0].url}`;
+    }
+    return null;
   };
 
-  /**
-   * Handles review button click, redirects if auth or sends to login.
-   * @param {Restaurant} restaurant
-   */
   const handleWriteAReview = async (restaurant: Restaurant) => {
     if (isAuthenticated) {
       router.push(`/restaurants/${restaurant.id}/review`);
@@ -136,15 +144,10 @@ export default function RestaurantPage({ params }: { params: { id: string } }) {
     }
   };
 
-  /**
-   * Redirects to edit page for a restaurant.
-   * @param {string} restaurantId
-   */
   const handleEditRestaurant = (restaurantId: string) => {
     router.push(`/restaurants/update?id=${restaurantId}`);
   };
 
-  // Deletes a restaurant and navigates home.
   const handleDeleteRestaurant = async () => {
     if (restaurant) {
       await apiService?.deleteRestaurant(restaurant.id);
@@ -152,28 +155,27 @@ export default function RestaurantPage({ params }: { params: { id: string } }) {
     }
   };
 
-  // Deletes a review and updates state.
   const handleDeleteReview = async () => {
     if (restaurant && reviewToDelete) {
       await apiService?.deleteReview(restaurant.id, reviewToDelete.id);
-      setReviews((prev) => prev.filter((r) => r.id !== reviewToDelete.id));
+      // Refresh reviews after deletion
+      const updatedReviews = reviews.filter(
+        (review) => review.id !== reviewToDelete.id
+      );
+      setReviews(updatedReviews);
       setDeleteModalOpen(false);
       setReviewToDelete(null);
     }
   };
 
-  /**
-   * Opens the delete modal with type context.
-   * @param {"restaurant" | "review"} type
-   * @param {Review} [review]
-   */
   const openDeleteModal = (type: "restaurant" | "review", review?: Review) => {
     setDeleteType(type);
-    if (type === "review" && review) setReviewToDelete(review);
+    if (type === "review" && review) {
+      setReviewToDelete(review);
+    }
     setDeleteModalOpen(true);
   };
 
-  /** Dispatches the confirmed delete action */
   const handleConfirmDelete = async () => {
     if (deleteType === "restaurant") {
       await handleDeleteRestaurant();
@@ -183,15 +185,10 @@ export default function RestaurantPage({ params }: { params: { id: string } }) {
     setDeleteModalOpen(false);
   };
 
-  /**
-   * Redirects to edit review page.
-   * @param {Review} review
-   */
   const handleEditReview = (review: Review) => {
-    router.push(`/restaurants/${params.id}/review?reviewId=${review.id}`);
+    router.push(`/restaurants/${id}/review?reviewId=${review.id}`);
   };
 
-  // Toggles sort between newest/oldest.
   const toggleDateSort = () => {
     setSortOrder((current) =>
       current.startsWith("datePosted")
@@ -202,7 +199,6 @@ export default function RestaurantPage({ params }: { params: { id: string } }) {
     );
   };
 
-  // Toggles sort between highest/lowest rating.
   const toggleRatingSort = () => {
     setSortOrder((current) =>
       current.startsWith("rating")
@@ -213,8 +209,7 @@ export default function RestaurantPage({ params }: { params: { id: string } }) {
     );
   };
 
-  // Returns human-readable sort label.
-  const getSortLabel = (): string => {
+  const getSortLabel = () => {
     switch (sortOrder) {
       case "datePosted,desc":
         return "Newest first";
