@@ -26,6 +26,17 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ErrorController {
 
+    /**
+     * Exception handler for {@link RestaurantNotFoundException}.
+     *
+     * <p>This method is invoked when a {@code RestaurantNotFoundException} is thrown anywhere
+     * in the controller layer. It logs the exception and returns a standardized error response
+     * with HTTP 404 (Not Found) status.</p>
+     *
+     * @param ex the {@code RestaurantNotFoundException} that was thrown
+     * @return a {@code ResponseEntity} containing an {@code ErrorDto} with a 404 status and
+     *         a descriptive error message
+     */
     @ExceptionHandler(RestaurantNotFoundException.class)
     public ResponseEntity<ErrorDto> handleRestaurantNotFoundException(RestaurantNotFoundException ex){
         log.error("Caught RestaurantNotFoundException", ex);
