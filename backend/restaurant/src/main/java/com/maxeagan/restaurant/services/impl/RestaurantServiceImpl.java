@@ -6,6 +6,7 @@ import com.maxeagan.restaurant.domain.dtos.RestaurantDto;
 import com.maxeagan.restaurant.domain.entities.Address;
 import com.maxeagan.restaurant.domain.entities.Photo;
 import com.maxeagan.restaurant.domain.entities.Restaurant;
+import com.maxeagan.restaurant.exceptions.RestaurantNotFoundException;
 import com.maxeagan.restaurant.repositories.RestaurantRepository;
 import com.maxeagan.restaurant.services.GeoLocationService;
 import com.maxeagan.restaurant.services.RestaurantService;
@@ -59,8 +60,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .map(photoUrl -> Photo.builder()
                         .url(photoUrl)
                         .uploadDate(LocalDateTime.now())
-                        .build())
-                .toList();
+                        .build()).toList();
 
         Restaurant restaurant = Restaurant.builder()
                 .name(request.getName())
@@ -124,8 +124,55 @@ public class RestaurantServiceImpl implements RestaurantService {
         return restaurantRepository.findAll(pageable);
     }
 
+    /**
+     * Retrieves a restaurant by its unique id
+     *
+     * @param id the unique id of the restaurant
+     * @return an {@code Optional} containing the {@code Restaurant} if found,
+     *         or an empty {@code Optional} if not found
+     */
     @Override
     public Optional<Restaurant> getRestaurant(String id) {
         return restaurantRepository.findById(id);
+    }
+
+    /**
+     * Updates the details of an existing restaurant.
+     *
+     * <p>If the restaurant with the specified ID does not exist, a {@link RestaurantNotFoundException} is thrown.
+     * This method updates all relevant fields including address, geolocation, contact info, operating hours, and photos.</p>
+     *
+     * @param id      the unique identifier of the restaurant to update
+     * @param request the request object containing updated restaurant data
+     * @return the updated {@code Restaurant} entity
+     * @throws RestaurantNotFoundException if the restaurant with the given ID is not found
+     */
+    @Override
+    public Restaurant updateRestaurant(String id, RestaurantCreateUpdateRequest request) {
+        Restaurant restaurant = getRestaurant(id)
+                .orElseThrow(() -> new RestaurantNotFoundException("Restaurant with this ID does not exist: " + id));
+
+        GeoLocation newGeolocation = geoLocationService.geoLocate(
+                request.getAddress()
+        );
+        GeoPoint newGeoPoint = new GeoPoint(newGeolocation.getLatitude(), newGeolocation.getLongitude());
+
+        List<String> photoIds = request.getPhotoIds();
+        List<Photo> photos = photoIds.stream()
+                .map(photoUrl -> Photo.builder()
+                        .url(photoUrl)
+                        .uploadDate(LocalDateTime.now())
+                        .build()).toList();
+
+        restaurant.setName(request.getName());
+        restaurant.setCuisineType(restaurant.getCuisineType());
+        restaurant.setContactInformation(request.getContactInformation());
+        restaurant.setAddress(request.getAddress());
+        restaurant.setGeoLocation(newGeoPoint);
+        restaurant.setOperatingHours(request.getOperatingHours());
+        restaurant.setPhotos(photos);
+
+        return restaurantRepository.save(restaurant);
+
     }
 }
