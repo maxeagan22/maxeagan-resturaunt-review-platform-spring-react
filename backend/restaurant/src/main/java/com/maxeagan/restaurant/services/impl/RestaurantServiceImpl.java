@@ -2,6 +2,7 @@ package com.maxeagan.restaurant.services.impl;
 
 import com.maxeagan.restaurant.domain.GeoLocation;
 import com.maxeagan.restaurant.domain.RestaurantCreateUpdateRequest;
+import com.maxeagan.restaurant.domain.dtos.RestaurantDto;
 import com.maxeagan.restaurant.domain.entities.Address;
 import com.maxeagan.restaurant.domain.entities.Photo;
 import com.maxeagan.restaurant.domain.entities.Restaurant;
@@ -12,10 +13,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.geo.GeoPoint;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Service implementation for managing restaurant entities.
@@ -119,5 +124,8 @@ public class RestaurantServiceImpl implements RestaurantService {
         return restaurantRepository.findAll(pageable);
     }
 
-
+    @Override
+    public Optional<Restaurant> getRestaurant(String id) {
+        return restaurantRepository.findById(id);
+    }
 }

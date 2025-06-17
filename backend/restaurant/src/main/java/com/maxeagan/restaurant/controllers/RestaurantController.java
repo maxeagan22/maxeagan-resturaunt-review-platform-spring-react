@@ -76,5 +76,10 @@ public class RestaurantController {
         return searchResult.map(restaurantMapper::toSummaryDto);
     }
 
-
+    @GetMapping(path = "/{restaurant_id}")
+    public ResponseEntity<RestaurantDto> getRestaurant(@PathVariable("restaurant_id") String restaurantId){
+        return restaurantService.getRestaurant(restaurantId)
+                .map(restaurant -> ResponseEntity.ok(restaurantMapper.toRestaurantDto(restaurant)))
+                .orElse(ResponseEntity.notFound().build());
+    }
 }
