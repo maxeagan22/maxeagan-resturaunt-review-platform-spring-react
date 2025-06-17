@@ -2,6 +2,7 @@ package com.maxeagan.restaurant.controllers;
 
 import com.maxeagan.restaurant.domain.dtos.ErrorDto;
 import com.maxeagan.restaurant.exceptions.RestaurantNotFoundException;
+import com.maxeagan.restaurant.exceptions.ReviewNotAllowedException;
 import com.maxeagan.restaurant.exceptions.StorageException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,19 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 @Slf4j
 public class ErrorController {
+
+    @ExceptionHandler(ReviewNotAllowedException.class)
+    public ResponseEntity<ErrorDto> handleReviewNotAllowedException(ReviewNotAllowedException ex){
+        log.error("Caught ReviewNotAllowedException");
+
+        ErrorDto errorDto = ErrorDto.builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .message("The specified review could not be created or updated. ")
+                .build();
+
+        return new ResponseEntity<>(errorDto, HttpStatus.BAD_REQUEST);
+        
+    }
 
     /**
      * Exception handler for {@link RestaurantNotFoundException}.
