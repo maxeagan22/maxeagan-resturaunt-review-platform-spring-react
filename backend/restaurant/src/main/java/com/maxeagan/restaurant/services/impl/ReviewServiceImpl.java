@@ -33,14 +33,12 @@ public class ReviewServiceImpl implements ReviewService {
             throw new ReviewNotAllowedException("User has already reviewed this restaurant");
         }
 
-        LocalDateTime now = LocalDateTime.now()
+        LocalDateTime now = LocalDateTime.now();
 
-        List<Photo> photos = review.getPhotoIds().stream().map(url -> {
-            return Photo.builder()
-                    .url(url)
-                    .uploadDate(now)
-                    .build();
-        }).toList();
+        List<Photo> photos = review.getPhotoIds().stream().map(url -> Photo.builder()
+                .url(url)
+                .uploadDate(now)
+                .build()).toList();
 
         String reviewId = UUID.randomUUID().toString();
 
@@ -63,7 +61,7 @@ public class ReviewServiceImpl implements ReviewService {
         return savedRestaurant.getReviews().stream()
                 .filter(r -> reviewId.equals(r.getId()))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException(("Error retrieving created review ")))
+                .orElseThrow(() -> new RuntimeException(("Error retrieving created review ")));
     }
 
     private Restaurant getRestaurantOrThrow(String restaurantId) {
