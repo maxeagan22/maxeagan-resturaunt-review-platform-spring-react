@@ -1,6 +1,7 @@
 package com.maxeagan.restaurant.controllers;
 
 import com.maxeagan.restaurant.domain.dtos.ErrorDto;
+import com.maxeagan.restaurant.exceptions.RestaurantNotFoundException;
 import com.maxeagan.restaurant.exceptions.StorageException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,18 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 @Slf4j
 public class ErrorController {
+
+    @ExceptionHandler(RestaurantNotFoundException.class)
+    public ResponseEntity<ErrorDto> handleRestaurantNotFoundException(RestaurantNotFoundException ex){
+        log.error("Caught RestaurantNotFoundException", ex);
+
+        ErrorDto errorDto = ErrorDto.builder()
+                .status(HttpStatus.NOT_FOUND.value())
+                .message("The specified restaurant was not found")
+                .build();
+
+        return new ResponseEntity<>(errorDto, HttpStatus.NOT_FOUND);
+    }
 
     /**
      * Handles validation errors thrown when method arguments annotated with {@code @Valid} fail validation.
