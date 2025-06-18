@@ -156,6 +156,21 @@ public class ReviewServiceImpl implements ReviewService {
 
     }
 
+    @Override
+    public void deleteReview(String restaurantId, String reviewId) {
+        Restaurant restaurant = getRestaurantOrThrow(restaurantId);
+        List<Review> filteredReviews = restaurant.getReviews()
+                .stream()
+                .filter(r -> !reviewId.equals(r.getId()))
+                .toList();
+
+        restaurant.setReviews(filteredReviews);
+
+        updateRestaurantAverageRating(restaurant);
+
+        restaurantRepository.save(restaurant);
+    }
+
     private Restaurant getRestaurantOrThrow(String restaurantId) {
         return restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new RestaurantNotFoundException(
