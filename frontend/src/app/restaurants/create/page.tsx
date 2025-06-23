@@ -1,30 +1,43 @@
 "use client";
 
 import { useForm, FormProvider } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAppContext } from "@/providers/AppContextProvider";
 import { CreateRestaurantRequest, Photo } from "@/domain/domain";
 import CreateRestaurantForm from "@/components/CreateRestaurantForm";
 import { useState } from "react";
 import axios from "axios";
-import { restaurantSchema, RestaurantFormData } from "@/schemas/restuarant";
 
-/**
- * Page for creating a new restaurant.
- *
- * - Uses React Hook Form with Zod for schema validation.
- * - Sends the form data to API on submit.
- * - Handles file uploads through uploadPhoto.
- * - Displays any errors returned from the API.
- */
+type FormData = {
+  name: string;
+  cuisineType: string;
+  contactInformation: string;
+  address: {
+    streetNumber: string;
+    streetName: string;
+    unit?: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+  };
+  operatingHours: {
+    monday: { openTime: string; closeTime: string } | null;
+    tuesday: { openTime: string; closeTime: string } | null;
+    wednesday: { openTime: string; closeTime: string } | null;
+    thursday: { openTime: string; closeTime: string } | null;
+    friday: { openTime: string; closeTime: string } | null;
+    saturday: { openTime: string; closeTime: string } | null;
+    sunday: { openTime: string; closeTime: string } | null;
+  };
+  photos: string[];
+};
+
 export default function CreateRestaurantPage() {
   const { apiService } = useAppContext();
   const [error, setError] = useState<string | undefined>();
 
-  // Initialize form with default values and zod validation.
-  const methods = useForm<RestaurantFormData>({
-    resolver: zodResolver(restaurantSchema),
+  const methods = useForm<FormData>({
     defaultValues: {
       name: "",
       cuisineType: "",
@@ -39,41 +52,30 @@ export default function CreateRestaurantPage() {
         country: "",
       },
       operatingHours: {
-        monday: undefined,
-        tuesday: undefined,
-        wednesday: undefined,
-        thursday: undefined,
-        friday: undefined,
-        saturday: undefined,
-        sunday: undefined,
+        monday: null,
+        tuesday: null,
+        wednesday: null,
+        thursday: null,
+        friday: null,
+        saturday: null,
+        sunday: null,
       },
       photos: [],
     },
   });
 
-  /**
-   * Uploads a photo to the backend using the API service.
-   *
-   * @param {File} file - Image file to upload
-   * @param {string} [caption] - Optional caption
-   * @returns {Promise<Photo>} The uploaded photo metadata
-   */
   const uploadPhoto = async (file: File, caption?: string): Promise<Photo> => {
-    if (!apiService) throw new Error("API service not available.");
+    if (null == apiService) {
+      throw Error("API Service not available!");
+    }
     return apiService.uploadPhoto(file, caption);
   };
 
-  /**
-   * Handles form submission and sends data to the backend.
-   *
-   * @param {RestaurantFormData} data - Validated form data
-   */
-  const onSubmit = async (data: RestaurantFormData) => {
-    try {
-      if (!apiService) throw new Error("API service not available.");
-      setError(undefined);
+  const onSubmit = async (data: FormData) => {
+    console.log("Form submitted:", data);
 
-      const payload: CreateRestaurantRequest = {
+    try {
+      const createRestaurantRequest: CreateRestaurantRequest = {
         name: data.name,
         cuisineType: data.cuisineType,
         contactInformation: data.contactInformation,
@@ -82,16 +84,27 @@ export default function CreateRestaurantPage() {
         photoIds: data.photos,
       };
 
-      await apiService.createRestaurant(payload);
+      if (null == apiService) {
+        throw Error("API Service not available!");
+      }
+
+      setError(undefined);
+
+      await apiService.createRestaurant(createRestaurantRequest);
     } catch (err) {
       if (axios.isAxiosError(err)) {
+        // This confirms it's an Axios error
         if (err.response?.status === 400) {
-          setError(err.response.data?.message);
+          // Extract the JSON error body
+          const errorData = err.response.data?.message;
+          setError(errorData);
         } else {
+          // Handle other status codes
           setError(`API Error: ${err.response?.status}: ${err.response?.data}`);
         }
       } else {
-        setError((err as Error).message || "Unknown error");
+        // Handle non-Axios errors
+        setError(error);
       }
     }
   };

@@ -10,20 +10,15 @@ import com.maxeagan.restaurant.services.RestaurantService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
- * REST controller for managing restaurant creation operations.
- * <p>
- * Handles HTTP POST requests to create new restaurant records in the system.
+ * REST controller for handling restaurant-related operations.
+ * Supports CRUD actions and search functionality.
  */
 @RestController
 @RequestMapping("/api/restaurants")
@@ -34,14 +29,10 @@ public class RestaurantController {
     private final RestaurantMapper restaurantMapper;
 
     /**
-     * Creates a new restaurant based on the provided input data.
-     * <p>
-     * Validates the request body, maps the DTO to the internal domain model,
-     * delegates the creation logic to the service layer, and returns the created
-     * restaurant as a DTO in the response.
+     * Creates a new restaurant.
      *
-     * @param request the validated input data for creating a restaurant
-     * @return ResponseEntity containing the created RestaurantDto
+     * @param request DTO containing restaurant creation data
+     * @return {@link ResponseEntity} with the created {@link RestaurantDto}
      */
     @PostMapping
     public ResponseEntity<RestaurantDto> createRestaurant(
@@ -56,6 +47,19 @@ public class RestaurantController {
         return ResponseEntity.ok(createdRestaurantDto);
     }
 
+    /**
+     * Searches for restaurants using optional filters like query text, minimum rating,
+     * location (latitude/longitude), and search radius.
+     *
+     * @param q         optional text query
+     * @param minRating optional minimum average rating
+     * @param latitude  optional latitude for location filtering
+     * @param longitude optional longitude for location filtering
+     * @param radius    optional radius in kilometers for geo search
+     * @param page      page number (1-indexed)
+     * @param size      number of results per page
+     * @return paginated list of {@link RestaurantSummaryDto}
+     */
     @GetMapping
     public Page<RestaurantSummaryDto> searchRestaurants(
             @RequestParam(required = false) String q,
@@ -76,6 +80,12 @@ public class RestaurantController {
         return searchResult.map(restaurantMapper::toSummaryDto);
     }
 
+    /**
+     * Retrieves a single restaurant by its ID.
+     *
+     * @param restaurantId ID of the restaurant to fetch
+     * @return {@link ResponseEntity} with the {@link RestaurantDto}, or 404 if not found
+     */
     @GetMapping(path = "/{restaurant_id}")
     public ResponseEntity<RestaurantDto> getRestaurant(@PathVariable("restaurant_id") String restaurantId){
         return restaurantService.getRestaurant(restaurantId)
@@ -83,6 +93,13 @@ public class RestaurantController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /**
+     * Updates an existing restaurant.
+     *
+     * @param restaurantId ID of the restaurant to update
+     * @param requestDto   DTO containing updated restaurant data
+     * @return {@link ResponseEntity} with the updated {@link RestaurantDto}
+     */
     @PutMapping(path = "/{restaurant_id}")
     public ResponseEntity<RestaurantDto> updateRestaurant(
             @PathVariable("restaurant_id") String restaurantId,
@@ -91,15 +108,20 @@ public class RestaurantController {
         RestaurantCreateUpdateRequest request = restaurantMapper
                 .toRestaurantCreateUpdateRequest(requestDto);
 
-       Restaurant updatedRestaurant = restaurantService.updateRestaurant(restaurantId, request);
+        Restaurant updatedRestaurant = restaurantService.updateRestaurant(restaurantId, request);
 
-       return ResponseEntity.ok(restaurantMapper.toRestaurantDto(updatedRestaurant));
+        return ResponseEntity.ok(restaurantMapper.toRestaurantDto(updatedRestaurant));
     }
 
+    /**
+     * Deletes a restaurant by its ID.
+     *
+     * @param restaurantId ID of the restaurant to delete
+     * @return {@link ResponseEntity} with 204 No Content
+     */
     @DeleteMapping(path = "/{restaurant_id}")
     public ResponseEntity<Void> deleteRestaurant(@PathVariable("restaurant_id") String restaurantId){
         restaurantService.deleteRestaurant(restaurantId);
-
         return ResponseEntity.noContent().build();
     }
 }

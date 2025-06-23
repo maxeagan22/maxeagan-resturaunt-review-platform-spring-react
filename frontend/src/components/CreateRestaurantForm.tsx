@@ -57,65 +57,56 @@ export default function RestaurantForm({
   const { register, setValue } = methods;
   const [previews, setPreviews] = useState<string[]>([]);
 
-  /**
-   * useEffect to load existing photos into preview state on component mount.
-   * Converts stored photo IDs into accessible URLs and sets preview images.
-   */
+  // Add this useEffect to load existing photos on component mount
   useEffect(() => {
-    const exisitngPhotoIds = methods.getValues("photos") || [];
-    if (exisitngPhotoIds.length > 0) {
-      const existingPreviews = exisitngPhotoIds.map(
+    const existingPhotoIds = methods.getValues("photos") || [];
+    if (existingPhotoIds.length > 0) {
+      // Convert photo IDs to full URLs
+      const existingPreviews = existingPhotoIds.map(
         (photoId: string) => `/api/photos/${photoId}`
       );
       setPreviews(existingPreviews);
     }
   }, [methods]);
 
-  /**
-   * Handles photo file input changes.
-   * Uploads selected files, updates form state with photo URLs,
-   * and generates local preview URLs for client display.
-   *
-   * @param e - React.ChangeEvent from file input.
-   */
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    const uplodadedPhotos = await Promise.all(
+    const uploadedPhotos = await Promise.all(
       files.map((photo) => uploadPhoto(photo))
     );
 
-    const existingPhotosIds = methods.getValues("photos");
-
+    // Get existing photo IDs first
+    const existingPhotoIds = methods.getValues("photos") || [];
+    // Add new photo IDs to existing ones
     const photoIds = [
-      ...existingPhotosIds,
-      ...uplodadedPhotos.map((photo) => photo.url),
+      ...existingPhotoIds,
+      ...uploadedPhotos.map((photo) => photo.url),
     ];
 
+    console.log("PhotoIDs " + photoIds);
     setValue("photos", photoIds);
 
+    // Add new previews to existing ones
     const newPreviews = files.map((file) => URL.createObjectURL(file));
     setPreviews([...previews, ...newPreviews]);
   };
 
-  /**
-   * Removes a photo preview and its corresponding form value.
-   * Also revokes object URL if the preview is a blob to free memory.
-   *
-   * @param indexToRemove - Index of the photo to be removed.
-   */
+  // New function to handle photo removal
   const handleRemovePhoto = (indexToRemove: number) => {
+    // Update previews
     const updatedPreviews = previews.filter(
       (_, index) => index !== indexToRemove
     );
     setPreviews(updatedPreviews);
 
-    const photoValues = methods.getValues("photos");
-    const existingPhotoIds = Array.isArray(photoValues) ? photoValues : [];
+    // Update form value
+    const existingPhotoIds = methods.getValues("photos") || [];
     const updatedPhotoIds = existingPhotoIds.filter(
       (_, index) => index !== indexToRemove
     );
     setValue("photos", updatedPhotoIds);
 
+    // Revoke object URL to prevent memory leaks
     if (previews[indexToRemove].startsWith("blob:")) {
       URL.revokeObjectURL(previews[indexToRemove]);
     }
