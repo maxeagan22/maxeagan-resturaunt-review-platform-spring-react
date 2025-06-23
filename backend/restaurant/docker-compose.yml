@@ -1,52 +1,75 @@
+version: "3.8"
+
 services:
   elasticsearch:
-    # Elasticsearch service for local development
     image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
     container_name: elasticsearch
     environment:
       - node.name=elasticsearch
       - cluster.name=es-docker-cluster
-      - discovery.type=single-node  # No clustering
-      - bootstrap.memory_lock=true  # Avoid swapping
-      - xpack.security.enabled=false  # Disable security for local dev
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m  # JVM heap size
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
     ulimits:
       memlock:
         soft: -1
-        hard: -1  # Prevent memory swapping
+        hard: -1
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data
     ports:
-      - "9200:9200"  # Elasticsearch HTTP API
+      - "9200:9200"
     networks:
-      - elastic
+      - app-network
 
   kibana:
-    # Kibana UI for Elasticsearch
     image: docker.elastic.co/kibana/kibana:8.12.0
     container_name: kibana
     ports:
-      - "5601:5601"  # Kibana Web UI
+      - "5601:5601"
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     depends_on:
       - elasticsearch
     networks:
-      - elastic
+      - app-network
 
   keycloak:
-    image: quay.io/keycloak/keycloak:23.0 #Keycloak version 23.0 from offical Quay repo.
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: keycloak
     ports:
-      - "9090:8080" # Expose container port 8080 on host port 9090
+      - "9090:8080"
     environment:
-      KEYCLOAK_ADMIN: admin # Default admin username.
-      KEYCLOAK_ADMIN_PASSWORD: admin # Default admin password (change in prod).
-      KC_DB: h2-file # Use H2 file based dev database (not going to be used in prod).
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: h2-file
     volumes:
-      - keycloak-data:/opt/keycloak/data # Persist H2 database and config.
+      - keycloak-data:/opt/keycloak/data
     command:
-      - start-dev # Start keycloak in dev mode (disables HTTPs, enables bug tools).
-      - --db=dev-file # Set dev DB mode
+      - start-dev
+      - --db=dev-file
+    networks:
+      - app-network
+
+  backend:
+    build: ./backend/restaurant 
+    ports:
+      - "8080:8080"
+    depends_on:
+      - elasticsearch
+    networks:
+      - app-network
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8080
+    depends_on:
+      - backend
+    networks:
+      - app-network
 
 volumes:
   elasticsearch-data:
@@ -54,5 +77,5 @@ volumes:
   keycloak-data:
 
 networks:
-  elastic:
+  app-network:
     driver: bridge
